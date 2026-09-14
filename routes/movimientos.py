@@ -1,12 +1,12 @@
 from datetime import date, datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, jsonify, request
 from sqlalchemy import case, func
 
 from extensions import db
 from models import Material, Movimiento, Obra, Tiempo
 
-bp = Blueprint("movimientos", __name__, url_prefix="/movimientos")
+bp = Blueprint("movimientos", __name__, url_prefix="/api/movimientos")
 
 MESES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -56,68 +56,7 @@ def _stock_actual(material_id: int) -> float:
     return float(total or 0)
 
 
-@bp.route("/nuevo", methods=["GET", "POST"])
-def nuevo():
-    obras = Obra.query.filter_by(estado="activa").order_by(Obra.nombre_obra).all()
-    materiales = Material.query.order_by(Material.nombre).all()
-
-    if request.method == "POST":
-        try:
-            material = Material.query.get_or_404(int(request.form["material_id"]))
-            obra = Obra.query.get_or_404(int(request.form["obra_id"]))
-            tipo = request.form["tipo_movimiento"]
-            cantidad = float(request.form["cantidad"])
-            fecha = datetime.strptime(request.form["fecha"], "%Y-%m-%d").date()
-            costo_unitario = float(
-                request.form.get("costo_unitario") or material.costo_unitario
-            )
-
-            if cantidad <= 0:
-                raise ValueError("La cantidad debe ser mayor a cero.")
-
-            if tipo == "SALIDA":
-                disponible = _stock_actual(material.material_id)
-                if cantidad > disponible:
-                    raise ValueError(
-                        f"Stock insuficiente: disponible {disponible:g} {material.unidad}, "
-                        f"solicitado {cantidad:g} {material.unidad}."
-                    )
-
-            tiempo = _get_or_create_tiempo(fecha)
-
-            movimiento = Movimiento(
-                obra_id=obra.obra_id,
-                material_id=material.material_id,
-                fecha_id=tiempo.fecha_id,
-                cantidad=cantidad,
-                tipo_movimiento=tipo,
-                costo_unitario=costo_unitario,
-                costo_total=round(cantidad * costo_unitario, 2),
-                observaciones=request.form.get("observaciones", "").strip(),
-                lote=request.form.get("lote", "").strip(),
-            )
-            db.session.add(movimiento)
-            db.session.commit()
-            flash(
-                f"Movimiento de {tipo.lower()} registrado: {cantidad:g} {material.unidad} "
-                f"de {material.nombre} en {obra.nombre_obra}.",
-                "success",
-            )
-            return redirect(url_for("movimientos.nuevo"))
-        except Exception as exc:
-            db.session.rollback()
-            flash(f"No se pudo registrar el movimiento: {exc}", "error")
-
-    return render_template(
-        "movimientos/form.html",
-        active_page="movimiento_nuevo",
-        obras=obras,
-        materiales=materiales,
-        today=date.today().isoformat(),
-    )
-
-
-@bp.route("/")
+@bp.route("", methods=["GET"])
 def index():
     query = Movimiento.query.join(Obra).join(Material).join(Tiempo)
 
@@ -126,6 +65,7 @@ def index():
     tipo = request.args.get("tipo")
     desde = request.args.get("desde")
     hasta = request.args.get("hasta")
+    limit = request.args.get("limit", default=300, type=int)
 
     if obra_id:
         query = query.filter(Movimiento.obra_id == obra_id)
@@ -138,19 +78,51 @@ def index():
     if hasta:
         query = query.filter(Tiempo.fecha <= datetime.strptime(hasta, "%Y-%m-%d").date())
 
-    movimientos = query.order_by(Movimiento.fecha_registro.desc()).limit(300).all()
+    movimientos = query.order_by(Movimiento.fecha_registro.desc()).limit(limit).all()
+    return jsonify([m.to_dict() for m in movimientos])
 
-    return render_template(
-        "movimientos/list.html",
-        active_page="movimientos",
-        movimientos=movimientos,
-        obras=Obra.query.order_by(Obra.nombre_obra).all(),
-        materiales=Material.query.order_by(Material.nombre).all(),
-        filtros={
-            "obra_id": obra_id,
-            "material_id": material_id,
-            "tipo": tipo or "",
-            "desde": desde or "",
-            "hasta": hasta or "",
-        },
-    )
+
+@bp.route("", methods=["POST"])
+def crear():
+    payload = request.get_json(force=True) or {}
+    try:
+        material = Material.query.get_or_404(int(payload["material_id"]))
+        obra = Obra.query.get_or_404(int(payload["obra_id"]))
+        tipo = payload["tipo_movimiento"]
+        cantidad = float(payload["cantidad"])
+        fecha = datetime.strptime(payload["fecha"], "%Y-%m-%d").date()
+        costo_unitario = float(payload.get("costo_unitario") or material.costo_unitario)
+
+        if tipo not in ("ENTRADA", "SALIDA"):
+            raise ValueError("Tipo de movimiento invalido.")
+
+        if cantidad <= 0:
+            raise ValueError("La cantidad debe ser mayor a cero.")
+
+        if tipo == "SALIDA":
+            disponible = _stock_actual(material.material_id)
+            if cantidad > disponible:
+                raise ValueError(
+                    f"Stock insuficiente: disponible {disponible:g} {material.unidad}, "
+                    f"solicitado {cantidad:g} {material.unidad}."
+                )
+
+        tiempo = _get_or_create_tiempo(fecha)
+
+        movimiento = Movimiento(
+            obra_id=obra.obra_id,
+            material_id=material.material_id,
+            fecha_id=tiempo.fecha_id,
+            cantidad=cantidad,
+            tipo_movimiento=tipo,
+            costo_unitario=costo_unitario,
+            costo_total=round(cantidad * costo_unitario, 2),
+            observaciones=(payload.get("observaciones") or "").strip(),
+            lote=(payload.get("lote") or "").strip(),
+        )
+        db.session.add(movimiento)
+        db.session.commit()
+        return jsonify(movimiento.to_dict()), 201
+    except Exception as exc:
+        db.session.rollback()
+        return jsonify({"error": str(exc)}), 400

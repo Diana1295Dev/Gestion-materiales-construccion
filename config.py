@@ -37,3 +37,4 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")

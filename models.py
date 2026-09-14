@@ -20,6 +20,9 @@ class Tiempo(db.Model):
 
     movimientos = db.relationship("Movimiento", back_populates="tiempo")
 
+    def to_dict(self):
+        return {"fecha_id": self.fecha_id, "fecha": self.fecha.isoformat()}
+
 
 class Obra(db.Model):
     __tablename__ = "dim_Obras"
@@ -37,6 +40,19 @@ class Obra(db.Model):
 
     movimientos = db.relationship("Movimiento", back_populates="obra")
 
+    def to_dict(self):
+        return {
+            "obra_id": self.obra_id,
+            "nombre_obra": self.nombre_obra,
+            "ubicacion": self.ubicacion,
+            "ciudad": self.ciudad,
+            "presupuesto_total": float(self.presupuesto_total),
+            "estado": self.estado,
+            "fecha_inicio": self.fecha_inicio.isoformat(),
+            "fecha_cierre": self.fecha_cierre.isoformat() if self.fecha_cierre else None,
+            "responsable": self.responsable,
+        }
+
 
 class Material(db.Model):
     __tablename__ = "dim_Materiales"
@@ -52,6 +68,21 @@ class Material(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
     movimientos = db.relationship("Movimiento", back_populates="material")
+
+    def to_dict(self, stock_actual=None):
+        data = {
+            "material_id": self.material_id,
+            "nombre": self.nombre,
+            "unidad": self.unidad,
+            "costo_unitario": float(self.costo_unitario),
+            "categoria": self.categoria,
+            "stock_minimo": self.stock_minimo,
+            "stock_maximo": self.stock_maximo,
+            "descripcion": self.descripcion,
+        }
+        if stock_actual is not None:
+            data["stock_actual"] = float(stock_actual)
+        return data
 
 
 class Movimiento(db.Model):
@@ -72,6 +103,24 @@ class Movimiento(db.Model):
     obra = db.relationship("Obra", back_populates="movimientos")
     material = db.relationship("Material", back_populates="movimientos")
     tiempo = db.relationship("Tiempo", back_populates="movimientos")
+
+    def to_dict(self):
+        return {
+            "movimiento_id": self.movimiento_id,
+            "tipo_movimiento": self.tipo_movimiento,
+            "cantidad": float(self.cantidad),
+            "costo_unitario": float(self.costo_unitario),
+            "costo_total": float(self.costo_total),
+            "observaciones": self.observaciones,
+            "lote": self.lote,
+            "fecha": self.tiempo.fecha.isoformat(),
+            "obra": {"obra_id": self.obra.obra_id, "nombre_obra": self.obra.nombre_obra},
+            "material": {
+                "material_id": self.material.material_id,
+                "nombre": self.material.nombre,
+                "unidad": self.material.unidad,
+            },
+        }
 
 
 def stock_por_material_subquery():

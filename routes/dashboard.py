@@ -1,13 +1,13 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, jsonify
 from sqlalchemy import case, func
 
 from extensions import db
 from models import Material, Movimiento, Obra, stock_por_material_subquery
 
-bp = Blueprint("dashboard", __name__, url_prefix="/")
+bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 
 
-@bp.route("/")
+@bp.route("", methods=["GET"])
 def index():
     total_obras_activas = Obra.query.filter_by(estado="activa").count()
     total_materiales = Material.query.count()
@@ -29,7 +29,6 @@ def index():
     )
 
     stock_subq = stock_por_material_subquery()
-
     stock_rows = (
         db.session.query(Material, func.coalesce(stock_subq.c.stock_actual, 0))
         .outerjoin(stock_subq, stock_subq.c.material_id == Material.material_id)
@@ -40,26 +39,28 @@ def index():
     alertas = []
     for material, stock_actual in stock_rows:
         stock_actual = float(stock_actual or 0)
-        item = {"material": material, "stock_actual": stock_actual}
+        item = material.to_dict(stock_actual=stock_actual)
         inventario.append(item)
         if stock_actual <= float(material.stock_minimo or 0):
             alertas.append(item)
 
-    inventario.sort(key=lambda x: x["material"].nombre)
+    inventario.sort(key=lambda x: x["nombre"])
     alertas.sort(key=lambda x: x["stock_actual"])
 
     recientes = (
         Movimiento.query.order_by(Movimiento.fecha_registro.desc()).limit(8).all()
     )
 
-    return render_template(
-        "dashboard.html",
-        active_page="dashboard",
-        total_obras_activas=total_obras_activas,
-        total_materiales=total_materiales,
-        total_movimientos=total_movimientos,
-        valor_inventario=valor_inventario,
-        inventario=inventario,
-        alertas=alertas,
-        recientes=recientes,
+    return jsonify(
+        {
+            "totales": {
+                "obras_activas": total_obras_activas,
+                "materiales": total_materiales,
+                "movimientos": total_movimientos,
+                "valor_inventario": float(valor_inventario),
+            },
+            "inventario": inventario,
+            "alertas": alertas,
+            "recientes": [m.to_dict() for m in recientes],
+        }
     )
