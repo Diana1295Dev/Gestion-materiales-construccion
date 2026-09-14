@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if obra else "Nueva" }} obra · Gestión de Materiales{% endblock %}
+{% block page_title %}{{ "Editar obra" if obra else "Nueva obra" }}{% endblock %}
+{% block page_subtitle %}{{ "Actualiza los datos del proyecto" if obra else "Registra un nuevo proyecto de construcción" }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:760px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="field full">
+        <label>Nombre de la obra</label>
+        <input type="text" name="nombre_obra" required maxlength="150" value="{{ obra.nombre_obra if obra else '' }}" placeholder="Ej. Torre Alameda - Etapa 2">
+      </div>
+
+      <div class="field">
+        <label>Ubicación</label>
+        <input type="text" name="ubicacion" required maxlength="150" value="{{ obra.ubicacion if obra else '' }}" placeholder="Dirección o sector">
+      </div>
+
+      <div class="field">
+        <label>Ciudad</label>
+        <input type="text" name="ciudad" required maxlength="50" value="{{ obra.ciudad if obra else '' }}">
+      </div>
+
+      <div class="field">
+        <label>Presupuesto total (USD)</label>
+        <input type="number" step="0.01" min="0" name="presupuesto_total" required value="{{ obra.presupuesto_total if obra else '' }}">
+      </div>
+
+      <div class="field">
+        <label>Responsable</label>
+        <input type="text" name="responsable" maxlength="100" value="{{ obra.responsable if obra else '' }}">
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select name="estado" required>
+          {% for e in estados %}
+          <option value="{{ e }}" {{ "selected" if obra and obra.estado == e }}>{{ e|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fecha de inicio</label>
+        <input type="date" name="fecha_inicio" required value="{{ obra.fecha_inicio.isoformat() if obra and obra.fecha_inicio else '' }}">
+      </div>
+
+      <div class="field">
+        <label>Fecha de cierre <span class="hint">(opcional)</span></label>
+        <input type="date" name="fecha_cierre" value="{{ obra.fecha_cierre.isoformat() if obra and obra.fecha_cierre else '' }}">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="{{ url_for('obras.index') }}" class="btn btn-ghost">Cancelar</a>
+      <button type="submit" class="btn btn-primary">{{ "Guardar cambios" if obra else "Crear obra" }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

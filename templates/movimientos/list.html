@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Historial de movimientos · Gestión de Materiales{% endblock %}
+{% block page_title %}Historial de movimientos{% endblock %}
+{% block page_subtitle %}Consulta y filtra entradas y salidas{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('movimientos.nuevo') }}" class="btn btn-primary">➕ Registrar movimiento</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:20px;">
+  <form method="get" class="filters">
+    <div class="field">
+      <label>Obra</label>
+      <select name="obra_id">
+        <option value="">Todas</option>
+        {% for obra in obras %}
+        <option value="{{ obra.obra_id }}" {{ "selected" if filtros.obra_id == obra.obra_id }}>{{ obra.nombre_obra }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Material</label>
+      <select name="material_id">
+        <option value="">Todos</option>
+        {% for m in materiales %}
+        <option value="{{ m.material_id }}" {{ "selected" if filtros.material_id == m.material_id }}>{{ m.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Tipo</label>
+      <select name="tipo">
+        <option value="">Todos</option>
+        <option value="ENTRADA" {{ "selected" if filtros.tipo == "ENTRADA" }}>Entrada</option>
+        <option value="SALIDA" {{ "selected" if filtros.tipo == "SALIDA" }}>Salida</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Desde</label>
+      <input type="date" name="desde" value="{{ filtros.desde }}">
+    </div>
+    <div class="field">
+      <label>Hasta</label>
+      <input type="date" name="hasta" value="{{ filtros.hasta }}">
+    </div>
+    <div class="field">
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+    <div class="field">
+      <a href="{{ url_for('movimientos.index') }}" class="btn btn-ghost">Limpiar</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  {% if movimientos %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha</th><th>Tipo</th><th>Material</th><th>Obra</th>
+          <th>Cantidad</th><th>Costo unitario</th><th>Costo total</th><th>Lote</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movimientos %}
+        <tr>
+          <td>{{ m.tiempo.fecha.strftime("%d/%m/%Y") }}</td>
+          <td>
+            {% if m.tipo_movimiento == "ENTRADA" %}
+              <span class="badge badge-entrada">⬇ Entrada</span>
+            {% else %}
+              <span class="badge badge-salida">⬆ Salida</span>
+            {% endif %}
+          </td>
+          <td>{{ m.material.nombre }}</td>
+          <td>{{ m.obra.nombre_obra }}</td>
+          <td>{{ "%.2f"|format(m.cantidad) }} {{ m.material.unidad }}</td>
+          <td>${{ "{:,.2f}".format(m.costo_unitario) }}</td>
+          <td><strong>${{ "{:,.2f}".format(m.costo_total) }}</strong></td>
+          <td>{{ m.lote or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="ic">🔍</div>
+    No se encontraron movimientos con esos filtros.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
