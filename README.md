@@ -73,7 +73,7 @@ flowchart LR
 
 ```text
 Gestion_de_materiales/
-├── app.py                      # Punto de entrada Flask: crea y registra la app
+├── app.py                      # Punto de entrada Flask: API + sirve frontend/dist (modo LAN)
 ├── config.py                   # Configuración y cadena de conexión (local/nube automática)
 ├── extensions.py               # Instancia de SQLAlchemy
 ├── models.py                   # Modelos ORM + serialización a JSON (to_dict)
@@ -209,6 +209,34 @@ npm run dev                    # Levanta la app en http://localhost:5173
 ```
 
 Abre **http://localhost:5173** en tu navegador. 🎉
+
+---
+
+## 🏠 Opción sin nube: uso en red local (LAN)
+
+Si la app la va a usar solo el equipo de una oficina/obra (todos conectados al mismo WiFi), **no necesitas nube ni Azure SQL**. Todo corre en un solo computador: la base de datos, el backend y el frontend ya compilado, servidos por un único proceso Flask.
+
+```bash
+# 1. Compila el frontend una sola vez
+cd frontend
+npm install
+npm run build
+cd ..
+
+# 2. Corre el backend (ya sirve la API Y la interfaz compilada)
+python app.py
+```
+
+Verás en la consola algo como `Running on http://192.168.x.x:5000` — esa es la IP de tu PC en la red local (también puedes verla con `ipconfig` en Windows, buscando "Dirección IPv4").
+
+Desde **cualquier otro computador o celular conectado al mismo WiFi**, abre esa dirección en el navegador, por ejemplo:
+
+```
+http://192.168.1.50:5000
+```
+
+**Ventajas:** cero costo, cero configuración externa, tus datos nunca salen de tu red.
+**Limitaciones:** el PC que corre `python app.py` debe estar encendido para que los demás accedan; solo funciona dentro de la misma red (no accesible desde fuera de la oficina); Windows puede pedir permiso de Firewall la primera vez — debes aceptarlo para que otros equipos se puedan conectar.
 
 ---
 
