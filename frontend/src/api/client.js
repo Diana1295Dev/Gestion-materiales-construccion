@@ -1,5 +1,8 @@
 const BASE_URL =
-  import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "/api" : "http://127.0.0.1:5000/api");
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://gestion-materiales-construccion.onrender.com/api"
+    : "http://127.0.0.1:5000/api");
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
