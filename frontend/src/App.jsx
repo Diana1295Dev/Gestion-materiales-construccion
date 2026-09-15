@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import Shell from "./components/Shell";
 import Dashboard from "./pages/Dashboard";
 import Obras from "./pages/Obras";
 import ObraForm from "./pages/ObraForm";
@@ -10,15 +11,17 @@ import Movimientos from "./pages/Movimientos";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/obras" element={<Obras />} />
-      <Route path="/obras/nueva" element={<ObraForm />} />
-      <Route path="/obras/:obraId/editar" element={<ObraForm />} />
-      <Route path="/materiales" element={<Materiales />} />
-      <Route path="/materiales/nuevo" element={<MaterialForm />} />
-      <Route path="/materiales/:materialId/editar" element={<MaterialForm />} />
-      <Route path="/movimientos" element={<Movimientos />} />
-      <Route path="/movimientos/nuevo" element={<MovimientoForm />} />
+      <Route element={<Shell />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/obras" element={<Obras />} />
+        <Route path="/obras/nueva" element={<ObraForm />} />
+        <Route path="/obras/:obraId/editar" element={<ObraForm />} />
+        <Route path="/materiales" element={<Materiales />} />
+        <Route path="/materiales/nuevo" element={<MaterialForm />} />
+        <Route path="/materiales/:materialId/editar" element={<MaterialForm />} />
+        <Route path="/movimientos" element={<Movimientos />} />
+        <Route path="/movimientos/nuevo" element={<MovimientoForm />} />
+      </Route>
     </Routes>
   );
 }

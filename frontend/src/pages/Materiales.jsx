@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import Flash from "../components/Flash";
+import MotionRow from "../components/MotionRow";
 import { api } from "../api/client";
 
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -32,7 +34,7 @@ export default function Materiales() {
       actions={<Link to="/materiales/nuevo" className="btn btn-primary">➕ Nuevo material</Link>}
     >
       <Flash message={message} />
-      <div className="card">
+      <motion.div className="card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         {materiales.length ? (
           <div className="table-wrap">
             <table className="data-table">
@@ -43,8 +45,8 @@ export default function Materiales() {
                 </tr>
               </thead>
               <tbody>
-                {materiales.map((m) => (
-                  <tr key={m.material_id}>
+                {materiales.map((m, i) => (
+                  <MotionRow key={m.material_id} index={i}>
                     <td>
                       <strong>{m.nombre}</strong>
                       <br />
@@ -62,7 +64,7 @@ export default function Materiales() {
                       <Link to={`/materiales/${m.material_id}/editar`} className="btn btn-ghost btn-sm">✏️ Editar</Link>
                       <button className="btn btn-danger btn-sm" onClick={() => eliminar(m)}>🗑️</button>
                     </td>
-                  </tr>
+                  </MotionRow>
                 ))}
               </tbody>
             </table>
@@ -75,7 +77,7 @@ export default function Materiales() {
             <Link to="/materiales/nuevo" className="btn btn-primary" style={{ marginTop: 16 }}>Registrar el primer material</Link>
           </div>
         )}
-      </div>
+      </motion.div>
     </Layout>
   );
 }

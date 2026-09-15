@@ -1,19 +1,14 @@
-import Sidebar from "./Sidebar";
-
 export default function Layout({ title, subtitle, actions, children }) {
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main">
-        <div className="topbar">
-          <div>
-            <h1>{title}</h1>
-            <div className="subtitle">{subtitle}</div>
-          </div>
-          {actions}
+    <>
+      <div className="topbar">
+        <div>
+          <h1>{title}</h1>
+          <div className="subtitle">{subtitle}</div>
         </div>
-        <div className="content">{children}</div>
+        {actions}
       </div>
-    </div>
+      <div className="content">{children}</div>
+    </>
   );
 }

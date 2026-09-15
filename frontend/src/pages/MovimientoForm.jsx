@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Layout from "../components/Layout";
 import Flash from "../components/Flash";
 import { api } from "../api/client";
@@ -95,7 +96,7 @@ export default function MovimientoForm() {
   return (
     <Layout title="Registrar movimiento" subtitle="Entrada o salida de materiales en obra">
       <Flash message={message} />
-      <div className="card" style={{ maxWidth: 820 }}>
+      <motion.div className="card" style={{ maxWidth: 820 }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <form onSubmit={onSubmit}>
           <div className="field full" style={{ marginBottom: 20 }}>
             <label>Tipo de movimiento</label>
@@ -169,9 +170,17 @@ export default function MovimientoForm() {
 
             <div className="field full">
               <label>Costo total estimado</label>
-              <div style={{ fontFamily: "var(--font-heading)", fontSize: 22, fontWeight: 700, color: "var(--lavender-dark)" }}>
-                ${costoTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key={costoTotal.toFixed(2)}
+                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ fontFamily: "var(--font-heading)", fontSize: 26, fontWeight: 700, color: "var(--lavender-dark)" }}
+                >
+                  ${costoTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
 
@@ -180,7 +189,7 @@ export default function MovimientoForm() {
             <button type="submit" className="btn btn-primary">Registrar movimiento</button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </Layout>
   );
 }

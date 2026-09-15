@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../components/Layout";
+import AnimatedNumber from "../components/AnimatedNumber";
 import { api } from "../api/client";
 
 const money = (n) =>
   "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 18 },
+  show: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -29,34 +40,39 @@ export default function Dashboard() {
     >
       {error && <div className="flashes"><div className="flash error">{error}</div></div>}
       {!data ? (
-        <p>Cargando…</p>
+        <div className="stat-grid">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton" style={{ height: 122, borderRadius: 16 }} />
+          ))}
+        </div>
       ) : (
         <>
           <div className="stat-grid">
-            <div className="stat-card c-lavender">
-              <div className="stat-icon">🏢</div>
-              <div className="stat-value">{data.totales.obras_activas}</div>
-              <div className="stat-label">Obras en marcha</div>
-            </div>
-            <div className="stat-card c-mint">
-              <div className="stat-icon">🧱</div>
-              <div className="stat-value">{data.totales.materiales}</div>
-              <div className="stat-label">Materiales registrados</div>
-            </div>
-            <div className="stat-card c-peach">
-              <div className="stat-icon">🧾</div>
-              <div className="stat-value">{data.totales.movimientos}</div>
-              <div className="stat-label">Entradas y salidas</div>
-            </div>
-            <div className="stat-card c-pink">
-              <div className="stat-icon">💰</div>
-              <div className="stat-value">{money(data.totales.valor_inventario)}</div>
-              <div className="stat-label">Valor del inventario</div>
-            </div>
+            {[
+              { cls: "c-lavender", icon: "🏢", value: data.totales.obras_activas, label: "Obras en marcha" },
+              { cls: "c-mint", icon: "🧱", value: data.totales.materiales, label: "Materiales registrados" },
+              { cls: "c-peach", icon: "🧾", value: data.totales.movimientos, label: "Entradas y salidas" },
+              { cls: "c-pink", icon: "💰", value: data.totales.valor_inventario, label: "Valor del inventario", money: true },
+            ].map((s, i) => (
+              <motion.div
+                key={s.label}
+                className={`stat-card ${s.cls}`}
+                custom={i}
+                initial="hidden"
+                animate="show"
+                variants={cardVariants}
+              >
+                <div className="stat-icon">{s.icon}</div>
+                <div className="stat-value">
+                  {s.money ? <AnimatedNumber value={s.value} format={money} /> : <AnimatedNumber value={s.value} />}
+                </div>
+                <div className="stat-label">{s.label}</div>
+              </motion.div>
+            ))}
           </div>
 
           <div className="grid-2">
-            <div className="card">
+            <motion.div className="card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.4 }}>
               <div className="card-header">
                 <h2>📦 Stock por material</h2>
                 <Link to="/materiales" className="btn btn-ghost btn-sm">Ver catálogo completo</Link>
@@ -88,9 +104,9 @@ export default function Dashboard() {
               ) : (
                 <div className="empty-state"><div className="ic">📭</div>Aún no hay materiales registrados.</div>
               )}
-            </div>
+            </motion.div>
 
-            <div className="card">
+            <motion.div className="card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22, duration: 0.4 }}>
               <div className="card-header"><h2>⚠️ Alertas de stock mínimo</h2></div>
               {data.alertas.length ? (
                 <div className="tag-list" style={{ flexDirection: "column", gap: 12 }}>
@@ -120,10 +136,10 @@ export default function Dashboard() {
               ) : (
                 <div className="empty-state"><div className="ic">✅</div>Todo el inventario está por encima del mínimo.</div>
               )}
-            </div>
+            </motion.div>
           </div>
 
-          <div className="card" style={{ marginTop: 20 }}>
+          <motion.div className="card" style={{ marginTop: 20 }} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}>
             <div className="card-header">
               <h2>🕒 Movimientos recientes</h2>
               <Link to="/movimientos" className="btn btn-ghost btn-sm">Ver historial completo</Link>
@@ -157,7 +173,7 @@ export default function Dashboard() {
             ) : (
               <div className="empty-state"><div className="ic">🧾</div>Todavía no se han registrado movimientos.</div>
             )}
-          </div>
+          </motion.div>
         </>
       )}
     </Layout>

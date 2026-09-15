@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import Flash from "../components/Flash";
+import MotionRow from "../components/MotionRow";
 import { api } from "../api/client";
 
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -32,7 +34,7 @@ export default function Obras() {
       actions={<Link to="/obras/nueva" className="btn btn-primary">➕ Nueva obra</Link>}
     >
       <Flash message={message} />
-      <div className="card">
+      <motion.div className="card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         {obras.length ? (
           <div className="table-wrap">
             <table className="data-table">
@@ -43,8 +45,8 @@ export default function Obras() {
                 </tr>
               </thead>
               <tbody>
-                {obras.map((obra) => (
-                  <tr key={obra.obra_id}>
+                {obras.map((obra, i) => (
+                  <MotionRow key={obra.obra_id} index={i}>
                     <td>
                       <strong>{obra.nombre_obra}</strong>
                       <br />
@@ -59,7 +61,7 @@ export default function Obras() {
                       <Link to={`/obras/${obra.obra_id}/editar`} className="btn btn-ghost btn-sm">✏️ Editar</Link>
                       <button className="btn btn-danger btn-sm" onClick={() => eliminar(obra)}>🗑️</button>
                     </td>
-                  </tr>
+                  </MotionRow>
                 ))}
               </tbody>
             </table>
@@ -72,7 +74,7 @@ export default function Obras() {
             <Link to="/obras/nueva" className="btn btn-primary" style={{ marginTop: 16 }}>Registrar la primera obra</Link>
           </div>
         )}
-      </div>
+      </motion.div>
     </Layout>
   );
 }

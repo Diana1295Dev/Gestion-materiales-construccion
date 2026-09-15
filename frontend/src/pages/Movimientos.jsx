@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../components/Layout";
+import MotionRow from "../components/MotionRow";
 import { api } from "../api/client";
 
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -76,7 +78,7 @@ export default function Movimientos() {
         </form>
       </div>
 
-      <div className="card">
+      <motion.div className="card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         {movimientos.length ? (
           <div className="table-wrap">
             <table className="data-table">
@@ -87,8 +89,8 @@ export default function Movimientos() {
                 </tr>
               </thead>
               <tbody>
-                {movimientos.map((m) => (
-                  <tr key={m.movimiento_id}>
+                {movimientos.map((m, i) => (
+                  <MotionRow key={m.movimiento_id} index={i}>
                     <td>{new Date(m.fecha + "T00:00:00").toLocaleDateString("es-CO")}</td>
                     <td>
                       {m.tipo_movimiento === "ENTRADA" ? (
@@ -103,7 +105,7 @@ export default function Movimientos() {
                     <td>{money(m.costo_unitario)}</td>
                     <td><strong>{money(m.costo_total)}</strong></td>
                     <td>{m.lote || "—"}</td>
-                  </tr>
+                  </MotionRow>
                 ))}
               </tbody>
             </table>
@@ -111,7 +113,7 @@ export default function Movimientos() {
         ) : (
           <div className="empty-state"><div className="ic">🔍</div>No se encontraron movimientos con esos filtros.</div>
         )}
-      </div>
+      </motion.div>
     </Layout>
   );
 }

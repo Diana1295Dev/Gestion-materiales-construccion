@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import Flash from "../components/Flash";
 import { api } from "../api/client";
@@ -52,7 +53,7 @@ export default function MaterialForm() {
       subtitle={editing ? "Actualiza los datos del material" : "Agrega un material al catálogo"}
     >
       <Flash message={message} />
-      <div className="card" style={{ maxWidth: 760 }}>
+      <motion.div className="card" style={{ maxWidth: 760 }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <form onSubmit={onSubmit}>
           <div className="form-grid">
             <div className="field full">
@@ -93,7 +94,7 @@ export default function MaterialForm() {
             <button type="submit" className="btn btn-primary">{editing ? "Guardar cambios" : "Crear material"}</button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </Layout>
   );
 }
