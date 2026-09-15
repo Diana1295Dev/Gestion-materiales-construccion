@@ -11,6 +11,8 @@ venv/
 # Flask / logs locales
 flask_out.log
 flask_err.log
+cloudflared_out.log
+cloudflared_err.log
 instance/
 
 # Editor / SO
