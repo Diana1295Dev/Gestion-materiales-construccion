@@ -214,20 +214,31 @@ Abre **http://localhost:5173** en tu navegador. 🎉
 
 ## ☁️ Despliegue en la nube
 
-El proyecto está pensado como **dos proyectos de Vercel separados**, dentro del mismo repositorio:
+En ambos casos, el backend y el frontend se despliegan como **dos servicios separados**, y ambos requieren una base de datos accesible desde internet — **Azure SQL Database** (capa gratuita disponible), mismo motor SQL Server, compatible con Power BI.
 
-1. **Backend** (raíz del repo) → función serverless con `api/index.py` + `vercel.json`. Usa **Azure SQL Database** (mismo motor SQL Server, compatible con Power BI) mediante `pymssql`.
-2. **Frontend** (carpeta `frontend/`) → proyecto Vercel apuntando a ese subdirectorio; Vercel detecta Vite automáticamente.
+`config.py` detecta automáticamente el entorno: si existen `DB_USER` y `DB_PASSWORD`, usa autenticación SQL vía `pymssql` (nube); si no, usa autenticación de Windows vía `pyodbc` (local). No hay que tocar código al cambiar de entorno.
 
-Variables de entorno a configurar **en Vercel** (nunca en el repositorio):
+### Opción A — Vercel (serverless)
 
-| Proyecto | Variable | Valor |
+1. **Backend**: proyecto Vercel apuntando a la raíz del repo → usa `api/index.py` + `vercel.json`.
+2. **Frontend**: proyecto Vercel apuntando a la carpeta `frontend/` → Vercel detecta Vite automáticamente.
+
+### Opción B — Render (servidor persistente, recomendado para el backend)
+
+1. **Backend** → "Web Service" en Render, apuntando a la raíz del repo:
+   - Build Command: `pip install -r api/requirements.txt`
+   - Start Command: `gunicorn app:app`
+2. **Frontend** → "Static Site" en Render, apuntando a la carpeta `frontend/`:
+   - Build Command: `npm install && npm run build`
+   - Publish Directory: `dist`
+
+### Variables de entorno (en el dashboard de la plataforma, nunca en el repositorio)
+
+| Servicio | Variable | Valor |
 |---|---|---|
 | Backend | `DB_SERVER`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Credenciales de Azure SQL |
 | Backend | `CORS_ORIGINS` | URL pública del frontend desplegado |
 | Frontend | `VITE_API_URL` | URL pública del backend desplegado + `/api` |
-
-`config.py` detecta automáticamente el entorno: si existen `DB_USER` y `DB_PASSWORD`, usa autenticación SQL vía `pymssql` (nube); si no, usa autenticación de Windows vía `pyodbc` (local).
 
 ---
 
