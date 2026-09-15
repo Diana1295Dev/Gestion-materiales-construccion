@@ -40,8 +40,8 @@ class Obra(db.Model):
 
     movimientos = db.relationship("Movimiento", back_populates="obra")
 
-    def to_dict(self):
-        return {
+    def to_dict(self, gasto_acumulado=None):
+        data = {
             "obra_id": self.obra_id,
             "nombre_obra": self.nombre_obra,
             "ubicacion": self.ubicacion,
@@ -52,6 +52,9 @@ class Obra(db.Model):
             "fecha_cierre": self.fecha_cierre.isoformat() if self.fecha_cierre else None,
             "responsable": self.responsable,
         }
+        if gasto_acumulado is not None:
+            data["gasto_acumulado"] = float(gasto_acumulado)
+        return data
 
 
 class Material(db.Model):
@@ -143,5 +146,21 @@ def stock_por_material_subquery():
             ).label("stock_actual"),
         )
         .group_by(Movimiento.material_id)
+        .subquery()
+    )
+
+
+def gasto_por_obra_subquery():
+    """Subconsulta con el gasto acumulado (suma de costo_total de todos los movimientos) por obra_id.
+
+    Se cuenta tanto ENTRADA como SALIDA porque ambos representan materiales
+    que ya se compraron/consumieron con cargo al presupuesto de la obra.
+    """
+    return (
+        db.session.query(
+            Movimiento.obra_id.label("obra_id"),
+            func.coalesce(func.sum(Movimiento.costo_total), 0).label("gasto_acumulado"),
+        )
+        .group_by(Movimiento.obra_id)
         .subquery()
     )

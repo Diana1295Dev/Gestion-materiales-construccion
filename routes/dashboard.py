@@ -1,8 +1,10 @@
-from flask import Blueprint, jsonify
+from datetime import date, timedelta
+
+from flask import Blueprint, jsonify, request
 from sqlalchemy import case, func
 
 from extensions import db
-from models import Material, Movimiento, Obra, stock_por_material_subquery
+from models import Material, Movimiento, Obra, Tiempo, stock_por_material_subquery
 
 bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 
@@ -62,5 +64,118 @@ def index():
             "inventario": inventario,
             "alertas": alertas,
             "recientes": [m.to_dict() for m in recientes],
+        }
+    )
+
+
+def _primer_dia_mes(d):
+    return d.replace(day=1)
+
+
+def _mes_anterior(primer_dia):
+    ultimo_dia_mes_previo = primer_dia - timedelta(days=1)
+    return ultimo_dia_mes_previo.replace(day=1)
+
+
+def _delta_pct(actual, anterior):
+    if not anterior:
+        return None
+    return round((actual - anterior) / anterior * 100, 2)
+
+
+@bp.route("/series", methods=["GET"])
+def series():
+    meses_ventana = request.args.get("meses", default=12, type=int)
+
+    filas = (
+        db.session.query(
+            Tiempo.anio,
+            Tiempo.mes,
+            Tiempo.nombre_mes,
+            func.coalesce(
+                func.sum(case((Movimiento.tipo_movimiento == "ENTRADA", Movimiento.costo_total), else_=0)),
+                0,
+            ).label("entradas"),
+            func.coalesce(
+                func.sum(case((Movimiento.tipo_movimiento == "SALIDA", Movimiento.costo_total), else_=0)),
+                0,
+            ).label("salidas"),
+            func.count(Movimiento.movimiento_id).label("movimientos"),
+        )
+        .join(Movimiento, Movimiento.fecha_id == Tiempo.fecha_id)
+        .group_by(Tiempo.anio, Tiempo.mes, Tiempo.nombre_mes)
+        .order_by(Tiempo.anio, Tiempo.mes)
+        .all()
+    )
+
+    todos_los_meses = []
+    acumulado = 0.0
+    for anio, mes, nombre_mes, entradas, salidas, movimientos in filas:
+        entradas = float(entradas)
+        salidas = float(salidas)
+        acumulado += entradas - salidas
+        todos_los_meses.append(
+            {
+                "periodo": f"{anio}-{mes:02d}",
+                "anio": anio,
+                "mes": mes,
+                "nombre_mes": nombre_mes,
+                "entradas": entradas,
+                "salidas": salidas,
+                "movimientos": movimientos,
+                "valor_inventario_acumulado": acumulado,
+            }
+        )
+
+    meses_serie = todos_los_meses[-meses_ventana:] if meses_ventana > 0 else todos_los_meses
+
+    mes_actual = todos_los_meses[-1] if todos_los_meses else None
+    mes_anterior = todos_los_meses[-2] if len(todos_los_meses) > 1 else None
+
+    variacion_movimientos = {
+        "actual": mes_actual["movimientos"] if mes_actual else 0,
+        "anterior": mes_anterior["movimientos"] if mes_anterior else 0,
+    }
+    variacion_movimientos["delta_pct"] = _delta_pct(
+        variacion_movimientos["actual"], variacion_movimientos["anterior"]
+    )
+
+    variacion_valor = {
+        "actual": mes_actual["valor_inventario_acumulado"] if mes_actual else 0.0,
+        "anterior": mes_anterior["valor_inventario_acumulado"] if mes_anterior else 0.0,
+    }
+    variacion_valor["delta_pct"] = _delta_pct(variacion_valor["actual"], variacion_valor["anterior"])
+
+    hoy = date.today()
+    primer_dia_actual = _primer_dia_mes(hoy)
+    primer_dia_anterior = _mes_anterior(primer_dia_actual)
+
+    materiales_actual = Material.query.filter(Material.fecha_creacion >= primer_dia_actual).count()
+    materiales_anterior = Material.query.filter(
+        Material.fecha_creacion >= primer_dia_anterior, Material.fecha_creacion < primer_dia_actual
+    ).count()
+
+    obras_actual = Obra.query.filter(Obra.fecha_creacion >= primer_dia_actual).count()
+    obras_anterior = Obra.query.filter(
+        Obra.fecha_creacion >= primer_dia_anterior, Obra.fecha_creacion < primer_dia_actual
+    ).count()
+
+    return jsonify(
+        {
+            "meses": meses_serie,
+            "variacion": {
+                "movimientos": variacion_movimientos,
+                "valor_inventario": variacion_valor,
+                "materiales_nuevos": {
+                    "actual": materiales_actual,
+                    "anterior": materiales_anterior,
+                    "delta_pct": _delta_pct(materiales_actual, materiales_anterior),
+                },
+                "obras_nuevas": {
+                    "actual": obras_actual,
+                    "anterior": obras_anterior,
+                    "delta_pct": _delta_pct(obras_actual, obras_anterior),
+                },
+            },
         }
     )

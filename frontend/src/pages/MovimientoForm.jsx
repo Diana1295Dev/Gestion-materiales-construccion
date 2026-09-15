@@ -176,7 +176,7 @@ export default function MovimientoForm() {
                   initial={{ opacity: 0, y: -6, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ fontFamily: "var(--font-heading)", fontSize: 26, fontWeight: 700, color: "var(--lavender-dark)" }}
+                  style={{ fontFamily: "var(--font-sans)", fontSize: 26, fontWeight: 700, color: "var(--color-primary)" }}
                 >
                   ${costoTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </motion.div>

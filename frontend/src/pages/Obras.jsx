@@ -4,9 +4,12 @@ import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import Flash from "../components/Flash";
 import MotionRow from "../components/MotionRow";
+import ProgressStock from "../components/ProgressStock";
 import { api } from "../api/client";
 
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const moneyCompact = (n) =>
+  "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
 
 export default function Obras() {
   const [obras, setObras] = useState([]);
@@ -40,7 +43,7 @@ export default function Obras() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Obra</th><th>Ciudad</th><th>Responsable</th><th>Presupuesto</th>
+                  <th>Obra</th><th>Ciudad</th><th>Responsable</th><th>Gasto vs. presupuesto</th>
                   <th>Estado</th><th>Inicio</th><th></th>
                 </tr>
               </thead>
@@ -50,11 +53,18 @@ export default function Obras() {
                     <td>
                       <strong>{obra.nombre_obra}</strong>
                       <br />
-                      <span style={{ fontSize: 12, color: "var(--ink-faint)" }}>{obra.ubicacion}</span>
+                      <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>{obra.ubicacion}</span>
                     </td>
                     <td>{obra.ciudad}</td>
                     <td>{obra.responsable || "—"}</td>
-                    <td>{money(obra.presupuesto_total)}</td>
+                    <td>
+                      <ProgressStock
+                        variant="budget"
+                        value={obra.gasto_acumulado ?? 0}
+                        max={obra.presupuesto_total}
+                        format={moneyCompact}
+                      />
+                    </td>
                     <td><span className={`badge badge-${obra.estado}`}>{obra.estado[0].toUpperCase() + obra.estado.slice(1)}</span></td>
                     <td>{new Date(obra.fecha_inicio + "T00:00:00").toLocaleDateString("es-CO")}</td>
                     <td className="row-actions">

@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 
 from extensions import db
-from models import Obra
+from models import Obra, gasto_por_obra_subquery
 
 bp = Blueprint("obras", __name__, url_prefix="/api/obras")
 
@@ -34,13 +34,26 @@ def index():
     if estado:
         query = query.filter_by(estado=estado)
     obras = query.order_by(Obra.fecha_creacion.desc()).all()
-    return jsonify([o.to_dict() for o in obras])
+
+    gasto_subq = gasto_por_obra_subquery()
+    gasto_map = dict(
+        db.session.query(gasto_subq.c.obra_id, gasto_subq.c.gasto_acumulado).all()
+    )
+
+    return jsonify([o.to_dict(gasto_acumulado=gasto_map.get(o.obra_id, 0)) for o in obras])
 
 
 @bp.route("/<int:obra_id>", methods=["GET"])
 def detalle(obra_id):
     obra = Obra.query.get_or_404(obra_id)
-    return jsonify(obra.to_dict())
+    gasto_subq = gasto_por_obra_subquery()
+    gasto = (
+        db.session.query(gasto_subq.c.gasto_acumulado)
+        .filter(gasto_subq.c.obra_id == obra_id)
+        .scalar()
+        or 0
+    )
+    return jsonify(obra.to_dict(gasto_acumulado=gasto))
 
 
 @bp.route("", methods=["POST"])

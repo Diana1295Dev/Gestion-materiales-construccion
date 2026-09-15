@@ -1,0 +1,93 @@
+/* ============================================================
+   Design tokens — Gestion de Materiales
+   Sistema de diseño "SaaS profesional" (referencia: Linear, Stripe
+   Dashboard, Vercel). Este archivo SOLO define variables: ningun
+   componente se estiliza aqui. style.css consume estos tokens.
+   ============================================================ */
+
+:root {
+  /* ---------- Color / superficies ---------- */
+  --color-bg: #F8F9FB;           /* fondo general de la app */
+  --color-surface: #FFFFFF;      /* cards, sidebar, topbar */
+  --color-surface-alt: #F3F4F6;  /* inputs, filas alternas, chips */
+  --color-border: #E5E7EB;       /* bordes sutiles */
+  --color-border-strong: #D1D5DB;/* bordes con mas contraste (focus, hover) */
+
+  /* ---------- Color / texto ---------- */
+  --color-text: #1A1A1A;             /* texto principal (nunca negro puro) */
+  --color-text-secondary: #6B7280;   /* texto secundario / metadatos */
+  --color-text-faint: #9CA3AF;       /* texto terciario / placeholders */
+  --color-text-on-primary: #FFFFFF;  /* texto sobre fondo primario */
+
+  /* ---------- Color / marca ---------- */
+  --color-primary: #1E3A5F;      /* azul marino sobrio — acciones principales */
+  --color-primary-hover: #16304D;
+  --color-primary-soft: #EAF1F8; /* fondo tenue para iconos/acentos primarios */
+  --color-accent: #2F6FB0;       /* variante para links, iconos activos */
+
+  /* ---------- Color / estados ---------- */
+  --color-success: #2F9E63;
+  --color-success-bg: #E7F6EE;
+  --color-success-text: #1E7A4C;
+
+  --color-warning: #C8871A;
+  --color-warning-bg: #FDF3E1;
+  --color-warning-text: #9C6912;
+
+  --color-danger: #D14D4D;
+  --color-danger-bg: #FBEAEA;
+  --color-danger-text: #B03A3A;
+
+  --color-info: #3B6FB6;
+  --color-info-bg: #EAF1FB;
+  --color-info-text: #2E5590;
+
+  /* ---------- Tipografia ---------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --fs-page-title: 26px;    /* titulos de pagina: 24-28px */
+  --fs-subtitle: 17px;      /* subtitulos: 16-18px */
+  --fs-section-title: 15px; /* encabezados de card/seccion */
+  --fs-body: 14px;          /* texto normal */
+  --fs-secondary: 12.5px;   /* texto secundario / metadatos: 12-13px */
+  --fs-display: 30px;       /* valores KPI grandes */
+
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+
+  /* ---------- Espaciado (multiplos de 4px) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ---------- Radios ---------- */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  /* ---------- Sombras (sutiles — sin glassmorphism) ---------- */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 10px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 10px 24px rgba(16, 24, 40, 0.10), 0 4px 8px rgba(16, 24, 40, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(47, 111, 176, 0.18);
+
+  /* ---------- Transiciones ---------- */
+  --transition-fast: all 0.15s ease;
+  --transition-base: all 0.2s ease;
+
+  /* ---------- Layout ---------- */
+  --sidebar-width: 248px;
+}
