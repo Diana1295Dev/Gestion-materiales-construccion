@@ -127,6 +127,33 @@ a { color: inherit; text-decoration: none; }
   z-index: -1;
 }
 
+.sidebar-top-row { display: flex; align-items: center; justify-content: space-between; }
+.sidebar-close-btn { display: none; }
+.sidebar-backdrop { display: none; }
+
+.mobile-topbar { display: none; }
+.hamburger-btn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+.brand-icon-sm { font-size: 18px; }
+
 .main {
   flex: 1;
   min-width: 0;
@@ -577,25 +604,55 @@ table.data-table {
 
 @media (max-width: 860px) {
   .app-shell { flex-direction: column; }
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
+
+  .mobile-topbar {
+    display: flex;
     align-items: center;
-    gap: var(--space-4);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
-    z-index: 10;
-    height: auto;
-    padding: var(--space-3) var(--space-4);
+    z-index: 30;
   }
-  .brand { flex-shrink: 0; }
-  .brand-text br { display: none; }
-  .brand-text span { display: none; }
-  .nav-group { flex-direction: row; flex-shrink: 0; gap: 2px; }
-  .nav-label { display: none; }
-  .nav-link { white-space: nowrap; padding: var(--space-2) var(--space-3); }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(280px, 82vw);
+    height: 100vh;
+    z-index: 60;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 0.28s ease;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--color-surface-alt);
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 55;
+  }
+
   .content, .topbar { padding-left: var(--space-4); padding-right: var(--space-4); }
   .topbar { position: static; }
   .grid-2 { grid-template-columns: 1fr; }

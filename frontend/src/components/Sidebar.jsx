@@ -20,22 +20,27 @@ function Item({ to, end, icon, children }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   return (
-    <aside className="sidebar">
-      <motion.div
-        className="brand"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="brand-icon">🏗️</div>
-        <div className="brand-text">
-          Materiales
-          <br />
-          <span>Control de obra</span>
-        </div>
-      </motion.div>
+    <aside className={"sidebar" + (open ? " open" : "")}>
+      <div className="sidebar-top-row">
+        <motion.div
+          className="brand"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="brand-icon">🏗️</div>
+          <div className="brand-text">
+            Materiales
+            <br />
+            <span>Control de obra</span>
+          </div>
+        </motion.div>
+        <button className="sidebar-close-btn" onClick={onClose} aria-label="Cerrar menú">
+          ✕
+        </button>
+      </div>
 
       <nav className="nav-group">
         <div className="nav-label">Principal</div>

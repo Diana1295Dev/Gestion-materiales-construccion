@@ -1,14 +1,35 @@
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Sidebar from "./Sidebar";
 
 export default function Shell() {
   const location = useLocation();
+  const [navOpen, setNavOpen] = useState(false);
+
+  useEffect(() => {
+    setNavOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
+      {navOpen && <div className="sidebar-backdrop" onClick={() => setNavOpen(false)} />}
+
       <div className="main">
+        <div className="mobile-topbar">
+          <button
+            className="hamburger-btn"
+            onClick={() => setNavOpen(true)}
+            aria-label="Abrir menú"
+          >
+            ☰
+          </button>
+          <div className="mobile-brand">
+            <span className="brand-icon-sm">🏗️</span> Materiales
+          </div>
+        </div>
+
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
