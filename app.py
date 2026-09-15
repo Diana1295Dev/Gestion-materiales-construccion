@@ -47,6 +47,50 @@ def create_app():
                 }
             ), 500
 
+    @app.route("/api/setup/init-db")
+    def setup_init_db():
+        from datetime import date, timedelta
+        from flask import request
+        from models import Tiempo
+
+        if request.args.get("key") != app.config["SECRET_KEY"]:
+            return jsonify({"error": "No autorizado."}), 403
+
+        db.create_all()
+
+        meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+        ]
+        dias = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
+
+        existentes = {t.fecha_id for t in Tiempo.query.with_entities(Tiempo.fecha_id).all()}
+
+        actual = date(2023, 1, 1)
+        fin = date(2030, 12, 31)
+        insertados = 0
+        while actual <= fin:
+            fecha_id = int(actual.strftime("%Y%m%d"))
+            if fecha_id not in existentes:
+                db.session.add(
+                    Tiempo(
+                        fecha_id=fecha_id,
+                        fecha=actual,
+                        dia=actual.day,
+                        mes=actual.month,
+                        anio=actual.year,
+                        trimestre=(actual.month - 1) // 3 + 1,
+                        semana=actual.isocalendar()[1],
+                        nombre_mes=meses[actual.month - 1],
+                        nombre_dia=dias[actual.weekday()],
+                    )
+                )
+                insertados += 1
+            actual += timedelta(days=1)
+        db.session.commit()
+
+        return jsonify({"status": "ok", "fechas_insertadas": insertados, "fechas_existentes": len(existentes)})
+
     # Sirve el frontend ya compilado (frontend/dist) para poder correr todo
     # con un solo proceso, ideal para uso en red local sin depender de la nube.
     if os.path.isdir(FRONTEND_DIST):

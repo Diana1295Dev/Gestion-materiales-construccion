@@ -7,6 +7,12 @@ load_dotenv()
 
 
 def _build_db_uri() -> str:
+    # Modo Render (PostgreSQL): si existe DATABASE_URL, se usa directamente.
+    # Render la genera sola al crear una base de datos Postgres gestionada.
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        return database_url
+
     server = os.environ.get("DB_SERVER", r"localhost\SQLEXPRESS")
     database = os.environ.get("DB_NAME", "InventarioConstruccion")
     user = os.environ.get("DB_USER")
