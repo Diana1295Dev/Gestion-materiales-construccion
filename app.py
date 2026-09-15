@@ -31,6 +31,22 @@ def create_app():
     def health():
         return jsonify({"status": "ok"})
 
+    @app.route("/api/health/db")
+    def health_db():
+        from sqlalchemy import text
+
+        try:
+            db.session.execute(text("SELECT 1"))
+            return jsonify({"db_status": "ok"})
+        except Exception as exc:
+            return jsonify(
+                {
+                    "db_status": "error",
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc)[:500],
+                }
+            ), 500
+
     # Sirve el frontend ya compilado (frontend/dist) para poder correr todo
     # con un solo proceso, ideal para uso en red local sin depender de la nube.
     if os.path.isdir(FRONTEND_DIST):
