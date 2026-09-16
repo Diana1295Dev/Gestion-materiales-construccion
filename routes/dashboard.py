@@ -11,9 +11,15 @@ bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 
 @bp.route("", methods=["GET"])
 def index():
+    from sqlalchemy import text
+
     total_obras_activas = Obra.query.filter_by(estado="activa").count()
-    total_materiales = Material.query.count()
     total_movimientos = Movimiento.query.count()
+
+    try:
+        total_materiales = Material.query.count()
+    except Exception:
+        total_materiales = db.session.query(db.func.count(Material.material_id)).scalar() or 0
 
     valor_inventario = (
         db.session.query(
@@ -30,24 +36,28 @@ def index():
         or 0
     )
 
-    stock_subq = stock_por_material_subquery()
-    stock_rows = (
-        db.session.query(Material, func.coalesce(stock_subq.c.stock_actual, 0))
-        .outerjoin(stock_subq, stock_subq.c.material_id == Material.material_id)
-        .all()
-    )
-
     inventario = []
     alertas = []
-    for material, stock_actual in stock_rows:
-        stock_actual = float(stock_actual or 0)
-        item = material.to_dict(stock_actual=stock_actual)
-        inventario.append(item)
-        if stock_actual <= float(material.stock_minimo or 0):
-            alertas.append(item)
 
-    inventario.sort(key=lambda x: x["nombre"])
-    alertas.sort(key=lambda x: x["stock_actual"])
+    try:
+        stock_subq = stock_por_material_subquery()
+        stock_rows = (
+            db.session.query(Material, func.coalesce(stock_subq.c.stock_actual, 0))
+            .outerjoin(stock_subq, stock_subq.c.material_id == Material.material_id)
+            .all()
+        )
+
+        for material, stock_actual in stock_rows:
+            stock_actual = float(stock_actual or 0)
+            item = material.to_dict(stock_actual=stock_actual)
+            inventario.append(item)
+            if stock_actual <= float(material.stock_minimo or 0):
+                alertas.append(item)
+
+        inventario.sort(key=lambda x: x["nombre"])
+        alertas.sort(key=lambda x: x["stock_actual"])
+    except Exception:
+        pass
 
     recientes = (
         Movimiento.query.order_by(Movimiento.fecha_registro.desc()).limit(8).all()
@@ -153,15 +163,23 @@ def series():
     primer_dia_actual_dt = datetime.combine(primer_dia_actual, datetime.min.time())
     primer_dia_anterior_dt = datetime.combine(primer_dia_anterior, datetime.min.time())
 
-    materiales_actual = Material.query.filter(Material.fecha_creacion >= primer_dia_actual_dt).count()
-    materiales_anterior = Material.query.filter(
-        Material.fecha_creacion >= primer_dia_anterior_dt, Material.fecha_creacion < primer_dia_actual_dt
-    ).count()
+    try:
+        materiales_actual = Material.query.filter(Material.fecha_creacion >= primer_dia_actual_dt).count()
+        materiales_anterior = Material.query.filter(
+            Material.fecha_creacion >= primer_dia_anterior_dt, Material.fecha_creacion < primer_dia_actual_dt
+        ).count()
+    except Exception:
+        materiales_actual = 0
+        materiales_anterior = 0
 
-    obras_actual = Obra.query.filter(Obra.fecha_creacion >= primer_dia_actual_dt).count()
-    obras_anterior = Obra.query.filter(
-        Obra.fecha_creacion >= primer_dia_anterior_dt, Obra.fecha_creacion < primer_dia_actual_dt
-    ).count()
+    try:
+        obras_actual = Obra.query.filter(Obra.fecha_creacion >= primer_dia_actual_dt).count()
+        obras_anterior = Obra.query.filter(
+            Obra.fecha_creacion >= primer_dia_anterior_dt, Obra.fecha_creacion < primer_dia_actual_dt
+        ).count()
+    except Exception:
+        obras_actual = 0
+        obras_anterior = 0
 
     return jsonify(
         {
