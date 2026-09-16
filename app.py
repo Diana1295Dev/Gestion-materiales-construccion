@@ -12,6 +12,7 @@ FRONTEND_DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fronte
 def _migrar_columnas_nuevas():
     """Agrega columnas nuevas a tablas ya existentes (db.create_all() solo
     crea tablas que faltan, no agrega columnas a las que ya existen).
+    Compatible con SQL Server y PostgreSQL.
     """
     from sqlalchemy import inspect, text
 
@@ -20,17 +21,20 @@ def _migrar_columnas_nuevas():
         columnas_existentes = {col["name"] for col in inspector.get_columns("dim_Materiales")}
 
         nuevas_columnas = {
-            "tiempo_reposicion_dias": "INTEGER DEFAULT 15",
-            "lote_compra": "INTEGER DEFAULT 100",
+            "tiempo_reposicion_dias": {"sql_server": "INTEGER DEFAULT 15", "postgresql": "INTEGER DEFAULT 15"},
+            "lote_compra": {"sql_server": "INTEGER DEFAULT 100", "postgresql": "INTEGER DEFAULT 100"},
         }
-        for nombre, definicion in nuevas_columnas.items():
+
+        db_dialect = db.engine.dialect.name
+        for nombre, definiciones in nuevas_columnas.items():
             if nombre not in columnas_existentes:
                 try:
+                    definicion = definiciones.get(db_dialect, definiciones.get("postgresql"))
                     db.session.execute(text(f"ALTER TABLE dim_Materiales ADD {nombre} {definicion}"))
-                except Exception:
+                except Exception as e:
                     pass
         db.session.commit()
-    except Exception:
+    except Exception as e:
         pass
 
 
