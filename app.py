@@ -18,23 +18,26 @@ def _migrar_columnas_nuevas():
 
     try:
         inspector = inspect(db.engine)
-        columnas_existentes = {col["name"] for col in inspector.get_columns("dim_Materiales")}
 
-        nuevas_columnas = {
-            "tiempo_reposicion_dias": {"sql_server": "INTEGER DEFAULT 15", "postgresql": "INTEGER DEFAULT 15"},
-            "lote_compra": {"sql_server": "INTEGER DEFAULT 100", "postgresql": "INTEGER DEFAULT 100"},
-        }
+        try:
+            columnas_existentes = {col["name"] for col in inspector.get_columns("dim_Materiales")}
+        except Exception:
+            return
 
-        db_dialect = db.engine.dialect.name
-        for nombre, definiciones in nuevas_columnas.items():
-            if nombre not in columnas_existentes:
-                try:
-                    definicion = definiciones.get(db_dialect, definiciones.get("postgresql"))
-                    db.session.execute(text(f"ALTER TABLE dim_Materiales ADD {nombre} {definicion}"))
-                except Exception as e:
-                    pass
-        db.session.commit()
-    except Exception as e:
+        if "tiempo_reposicion_dias" not in columnas_existentes:
+            try:
+                db.session.execute(text("ALTER TABLE dim_Materiales ADD COLUMN tiempo_reposicion_dias INTEGER DEFAULT 15"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        if "lote_compra" not in columnas_existentes:
+            try:
+                db.session.execute(text("ALTER TABLE dim_Materiales ADD COLUMN lote_compra INTEGER DEFAULT 100"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+    except Exception:
         pass
 
 
