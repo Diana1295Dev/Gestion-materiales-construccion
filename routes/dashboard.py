@@ -19,7 +19,8 @@ def index():
     try:
         total_materiales = Material.query.count()
     except Exception:
-        total_materiales = db.session.query(db.func.count(Material.material_id)).scalar() or 0
+        db.session.rollback()
+        total_materiales = 0
 
     valor_inventario = (
         db.session.query(
@@ -57,7 +58,7 @@ def index():
         inventario.sort(key=lambda x: x["nombre"])
         alertas.sort(key=lambda x: x["stock_actual"])
     except Exception:
-        pass
+        db.session.rollback()
 
     recientes = (
         Movimiento.query.order_by(Movimiento.fecha_registro.desc()).limit(8).all()
@@ -169,6 +170,7 @@ def series():
             Material.fecha_creacion >= primer_dia_anterior_dt, Material.fecha_creacion < primer_dia_actual_dt
         ).count()
     except Exception:
+        db.session.rollback()
         materiales_actual = 0
         materiales_anterior = 0
 
@@ -178,6 +180,7 @@ def series():
             Obra.fecha_creacion >= primer_dia_anterior_dt, Obra.fecha_creacion < primer_dia_actual_dt
         ).count()
     except Exception:
+        db.session.rollback()
         obras_actual = 0
         obras_anterior = 0
 
