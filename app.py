@@ -17,26 +17,26 @@ def _migrar_columnas_nuevas():
     from sqlalchemy import inspect, text
 
     try:
-        inspector = inspect(db.engine)
-
-        try:
-            columnas_existentes = {col["name"] for col in inspector.get_columns("dim_Materiales")}
-        except Exception:
-            return
-
-        if "tiempo_reposicion_dias" not in columnas_existentes:
+        with db.engine.connect() as conn:
+            inspector = inspect(conn)
             try:
-                db.session.execute(text("ALTER TABLE dim_Materiales ADD COLUMN tiempo_reposicion_dias INTEGER DEFAULT 15"))
-                db.session.commit()
+                columnas = {col["name"] for col in inspector.get_columns("dim_Materiales")}
             except Exception:
-                db.session.rollback()
+                return
 
-        if "lote_compra" not in columnas_existentes:
-            try:
-                db.session.execute(text("ALTER TABLE dim_Materiales ADD COLUMN lote_compra INTEGER DEFAULT 100"))
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
+            if "tiempo_reposicion_dias" not in columnas:
+                try:
+                    conn.execute(text("ALTER TABLE dim_Materiales ADD COLUMN tiempo_reposicion_dias INTEGER DEFAULT 15"))
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+
+            if "lote_compra" not in columnas:
+                try:
+                    conn.execute(text("ALTER TABLE dim_Materiales ADD COLUMN lote_compra INTEGER DEFAULT 100"))
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
     except Exception:
         pass
 
