@@ -386,6 +386,27 @@ a { color: inherit; text-decoration: none; }
   justify-content: flex-end;
 }
 
+.suggestion-box {
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.suggestion-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+.suggestion-box p {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--color-info-text);
+}
+.suggestion-box p.hint { margin-top: var(--space-2); color: var(--color-text-faint); }
+
 .toggle-tipo {
   display: flex;
   gap: var(--space-2);

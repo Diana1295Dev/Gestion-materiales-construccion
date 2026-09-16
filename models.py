@@ -67,6 +67,8 @@ class Material(db.Model):
     categoria = db.Column(db.String(50), nullable=False)
     stock_minimo = db.Column(db.Integer, default=0)
     stock_maximo = db.Column(db.Integer, default=1000)
+    tiempo_reposicion_dias = db.Column(db.Integer, default=15)
+    lote_compra = db.Column(db.Integer, default=100)
     descripcion = db.Column(db.String(200))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -81,6 +83,8 @@ class Material(db.Model):
             "categoria": self.categoria,
             "stock_minimo": self.stock_minimo,
             "stock_maximo": self.stock_maximo,
+            "tiempo_reposicion_dias": self.tiempo_reposicion_dias,
+            "lote_compra": self.lote_compra,
             "descripcion": self.descripcion,
         }
         if stock_actual is not None:

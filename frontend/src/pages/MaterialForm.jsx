@@ -15,6 +15,8 @@ const empty = {
   costo_unitario: "",
   stock_minimo: 0,
   stock_maximo: 1000,
+  tiempo_reposicion_dias: 15,
+  lote_compra: 100,
   descripcion: "",
 };
 
@@ -24,12 +26,29 @@ export default function MaterialForm() {
   const navigate = useNavigate();
   const [form, setForm] = useState(empty);
   const [message, setMessage] = useState(null);
+  const [sugerencia, setSugerencia] = useState(null);
 
   useEffect(() => {
     if (editing) {
-      api.get(`/materiales/${materialId}`).then(setForm);
+      api.get(`/materiales/${materialId}`).then((data) =>
+        setForm({
+          ...data,
+          tiempo_reposicion_dias: data.tiempo_reposicion_dias ?? 15,
+          lote_compra: data.lote_compra ?? 100,
+        })
+      );
+      api.get(`/materiales/${materialId}/sugerencia-stock`).then(setSugerencia).catch(() => {});
     }
   }, [materialId]);
+
+  const usarSugerencia = () => {
+    if (!sugerencia?.stock_minimo_sugerido) return;
+    setForm({
+      ...form,
+      stock_minimo: sugerencia.stock_minimo_sugerido,
+      stock_maximo: sugerencia.stock_maximo_sugerido,
+    });
+  };
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -84,6 +103,52 @@ export default function MaterialForm() {
               <label>Stock máximo</label>
               <input type="number" step="0.01" min="0" name="stock_maximo" value={form.stock_maximo} onChange={onChange} />
             </div>
+            <div className="field">
+              <label>Tiempo de reposición (días) <span className="hint">(lo que tarda en llegar un pedido)</span></label>
+              <input type="number" step="1" min="1" name="tiempo_reposicion_dias" value={form.tiempo_reposicion_dias} onChange={onChange} />
+            </div>
+            <div className="field">
+              <label>Lote de compra <span className="hint">(cantidad típica por pedido)</span></label>
+              <input type="number" step="1" min="1" name="lote_compra" value={form.lote_compra} onChange={onChange} />
+            </div>
+
+            {editing && sugerencia && (
+              <div className="field full">
+                {sugerencia.suficiente || sugerencia.meses_con_datos > 0 ? (
+                  <div className="suggestion-box">
+                    <div className="suggestion-box-header">
+                      <strong>📊 Sugerencia con base en el historial de salidas</strong>
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={usarSugerencia}>
+                        Usar sugerido
+                      </button>
+                    </div>
+                    <p>
+                      Con {sugerencia.meses_con_datos} {sugerencia.meses_con_datos === 1 ? "mes" : "meses"} de
+                      historial, la demanda diaria promedio es <strong>{sugerencia.demanda_diaria_promedio}</strong>{" "}
+                      {form.unidad}/día. Con un tiempo de reposición de {sugerencia.tiempo_reposicion_dias} días y un
+                      stock de seguridad de {sugerencia.stock_seguridad} {form.unidad}:
+                    </p>
+                    <p style={{ marginTop: 4 }}>
+                      Mínimo sugerido = (demanda diaria × tiempo de reposición) + stock de seguridad ={" "}
+                      <strong>{sugerencia.stock_minimo_sugerido}</strong> {form.unidad}
+                      <br />
+                      Máximo sugerido = mínimo + lote de compra ({sugerencia.lote_compra}) ={" "}
+                      <strong>{sugerencia.stock_maximo_sugerido}</strong> {form.unidad}
+                    </p>
+                    {!sugerencia.suficiente && (
+                      <p className="hint">
+                        Con solo 1 mes de historial la sugerencia es preliminar — se afina a medida que registres
+                        más movimientos.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="suggestion-box">
+                    <p>{sugerencia.mensaje}</p>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="field full">
               <label>Descripción <span className="hint">(opcional)</span></label>
               <textarea name="descripcion" maxLength={200} value={form.descripcion} onChange={onChange}></textarea>

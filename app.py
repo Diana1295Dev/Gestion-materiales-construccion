@@ -9,6 +9,25 @@ from extensions import db
 FRONTEND_DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "dist")
 
 
+def _migrar_columnas_nuevas():
+    """Agrega columnas nuevas a tablas ya existentes (db.create_all() solo
+    crea tablas que faltan, no agrega columnas a las que ya existen).
+    """
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(db.engine)
+    columnas_existentes = {col["name"] for col in inspector.get_columns("dim_Materiales")}
+
+    nuevas_columnas = {
+        "tiempo_reposicion_dias": "INTEGER DEFAULT 15",
+        "lote_compra": "INTEGER DEFAULT 100",
+    }
+    for nombre, definicion in nuevas_columnas.items():
+        if nombre not in columnas_existentes:
+            db.session.execute(text(f"ALTER TABLE dim_Materiales ADD {nombre} {definicion}"))
+    db.session.commit()
+
+
 def create_app():
     app = Flask(__name__, static_folder=None)
     app.config.from_object(Config)
@@ -57,6 +76,7 @@ def create_app():
             return jsonify({"error": "No autorizado."}), 403
 
         db.create_all()
+        _migrar_columnas_nuevas()
 
         meses = [
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
