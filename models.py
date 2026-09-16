@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import case, func, orm
+from sqlalchemy import case, func
 
 from extensions import db
 
@@ -67,24 +67,20 @@ class Material(db.Model):
     categoria = db.Column(db.String(50), nullable=False)
     stock_minimo = db.Column(db.Integer, default=0)
     stock_maximo = db.Column(db.Integer, default=1000)
-    tiempo_reposicion_dias = orm.deferred(db.Column(db.Integer, default=15))
-    lote_compra = orm.deferred(db.Column(db.Integer, default=100))
     descripcion = db.Column(db.String(200))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
     movimientos = db.relationship("Movimiento", back_populates="material")
 
+    @property
+    def tiempo_reposicion_dias(self):
+        return 15
+
+    @property
+    def lote_compra(self):
+        return 100
+
     def to_dict(self, stock_actual=None):
-        try:
-            tiempo_reposicion = self.tiempo_reposicion_dias or 15
-        except Exception:
-            tiempo_reposicion = 15
-
-        try:
-            lote = self.lote_compra or 100
-        except Exception:
-            lote = 100
-
         data = {
             "material_id": self.material_id,
             "nombre": self.nombre,
@@ -93,8 +89,8 @@ class Material(db.Model):
             "categoria": self.categoria,
             "stock_minimo": self.stock_minimo,
             "stock_maximo": self.stock_maximo,
-            "tiempo_reposicion_dias": tiempo_reposicion,
-            "lote_compra": lote,
+            "tiempo_reposicion_dias": self.tiempo_reposicion_dias,
+            "lote_compra": self.lote_compra,
             "descripcion": self.descripcion,
         }
         if stock_actual is not None:
