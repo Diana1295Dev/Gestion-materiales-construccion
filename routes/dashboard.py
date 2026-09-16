@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from sqlalchemy import case, func
@@ -150,14 +150,17 @@ def series():
     primer_dia_actual = _primer_dia_mes(hoy)
     primer_dia_anterior = _mes_anterior(primer_dia_actual)
 
-    materiales_actual = Material.query.filter(Material.fecha_creacion >= primer_dia_actual).count()
+    primer_dia_actual_dt = datetime.combine(primer_dia_actual, datetime.min.time())
+    primer_dia_anterior_dt = datetime.combine(primer_dia_anterior, datetime.min.time())
+
+    materiales_actual = Material.query.filter(Material.fecha_creacion >= primer_dia_actual_dt).count()
     materiales_anterior = Material.query.filter(
-        Material.fecha_creacion >= primer_dia_anterior, Material.fecha_creacion < primer_dia_actual
+        Material.fecha_creacion >= primer_dia_anterior_dt, Material.fecha_creacion < primer_dia_actual_dt
     ).count()
 
-    obras_actual = Obra.query.filter(Obra.fecha_creacion >= primer_dia_actual).count()
+    obras_actual = Obra.query.filter(Obra.fecha_creacion >= primer_dia_actual_dt).count()
     obras_anterior = Obra.query.filter(
-        Obra.fecha_creacion >= primer_dia_anterior, Obra.fecha_creacion < primer_dia_actual
+        Obra.fecha_creacion >= primer_dia_anterior_dt, Obra.fecha_creacion < primer_dia_actual_dt
     ).count()
 
     return jsonify(
