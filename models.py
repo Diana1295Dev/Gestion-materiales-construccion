@@ -83,8 +83,8 @@ class Material(db.Model):
             "categoria": self.categoria,
             "stock_minimo": self.stock_minimo,
             "stock_maximo": self.stock_maximo,
-            "tiempo_reposicion_dias": self.tiempo_reposicion_dias,
-            "lote_compra": self.lote_compra,
+            "tiempo_reposicion_dias": self.tiempo_reposicion_dias or 15,
+            "lote_compra": self.lote_compra or 100,
             "descripcion": self.descripcion,
         }
         if stock_actual is not None:
