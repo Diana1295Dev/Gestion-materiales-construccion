@@ -76,6 +76,10 @@ def create_app():
                 }
             ), 500
 
+    with app.app_context():
+        db.create_all()
+        _migrar_columnas_nuevas()
+
     @app.route("/api/setup/init-db")
     def setup_init_db():
         from datetime import date, timedelta
