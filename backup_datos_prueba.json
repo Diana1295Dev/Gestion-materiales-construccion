@@ -1,0 +1,131 @@
+{
+  "exportado_en": "2026-09-15T16:59:37.086552",
+  "obras": [
+    {
+      "obra_id": 1,
+      "nombre_obra": "Torre Alameda",
+      "ubicacion": "Av. Principal 123",
+      "ciudad": "Bogota",
+      "presupuesto_total": 850000.0,
+      "estado": "activa",
+      "fecha_inicio": "2026-02-01",
+      "fecha_cierre": null,
+      "responsable": "Diana Gonzalez",
+      "fecha_creacion": "2026-09-15T13:45:42.110000"
+    },
+    {
+      "obra_id": 2,
+      "nombre_obra": "Conjunto Los Robles",
+      "ubicacion": "Calle 45 # 12-30",
+      "ciudad": "Medellin",
+      "presupuesto_total": 1200000.0,
+      "estado": "activa",
+      "fecha_inicio": "2026-03-10",
+      "fecha_cierre": null,
+      "responsable": "Carlos Ruiz",
+      "fecha_creacion": "2026-09-15T13:45:42.683000"
+    }
+  ],
+  "materiales": [
+    {
+      "material_id": 1,
+      "nombre": "Cemento gris tipo I",
+      "unidad": "bolsa",
+      "costo_unitario": 32000.0,
+      "categoria": "Estructural",
+      "stock_minimo": 100,
+      "stock_maximo": 2000,
+      "descripcion": "Cemento para estructura",
+      "fecha_creacion": "2026-09-15T13:45:42.917000"
+    },
+    {
+      "material_id": 2,
+      "nombre": "Varilla de 1/2 pulgada",
+      "unidad": "varilla",
+      "costo_unitario": 28500.0,
+      "categoria": "Estructural",
+      "stock_minimo": 200,
+      "stock_maximo": 3000,
+      "descripcion": "Varilla corrugada",
+      "fecha_creacion": "2026-09-15T13:45:43.050000"
+    },
+    {
+      "material_id": 3,
+      "nombre": "Pintura blanca",
+      "unidad": "litro",
+      "costo_unitario": 18500.0,
+      "categoria": "Acabados",
+      "stock_minimo": 30,
+      "stock_maximo": 500,
+      "descripcion": "Pintura de interiores",
+      "fecha_creacion": "2026-09-15T13:45:43.167000"
+    }
+  ],
+  "movimientos": [
+    {
+      "movimiento_id": 1,
+      "obra_id": 1,
+      "material_id": 1,
+      "fecha_id": 20260901,
+      "cantidad": 500.0,
+      "tipo_movimiento": "ENTRADA",
+      "costo_unitario": 32000.0,
+      "costo_total": 16000000.0,
+      "observaciones": "Compra inicial de cemento",
+      "lote": "LOTE-001",
+      "fecha_registro": "2026-09-15T13:45:43.430000"
+    },
+    {
+      "movimiento_id": 2,
+      "obra_id": 1,
+      "material_id": 2,
+      "fecha_id": 20260902,
+      "cantidad": 800.0,
+      "tipo_movimiento": "ENTRADA",
+      "costo_unitario": 28500.0,
+      "costo_total": 22800000.0,
+      "observaciones": "Compra de varilla",
+      "lote": "LOTE-002",
+      "fecha_registro": "2026-09-15T13:45:43.640000"
+    },
+    {
+      "movimiento_id": 3,
+      "obra_id": 1,
+      "material_id": 1,
+      "fecha_id": 20260908,
+      "cantidad": 420.0,
+      "tipo_movimiento": "SALIDA",
+      "costo_unitario": 32000.0,
+      "costo_total": 13440000.0,
+      "observaciones": "Uso en cimentacion torre A",
+      "lote": "LOTE-001",
+      "fecha_registro": "2026-09-15T13:45:43.830000"
+    },
+    {
+      "movimiento_id": 4,
+      "obra_id": 2,
+      "material_id": 3,
+      "fecha_id": 20260905,
+      "cantidad": 120.0,
+      "tipo_movimiento": "ENTRADA",
+      "costo_unitario": 18500.0,
+      "costo_total": 2220000.0,
+      "observaciones": "Pintura para fachada",
+      "lote": "LOTE-010",
+      "fecha_registro": "2026-09-15T13:45:43.993000"
+    },
+    {
+      "movimiento_id": 5,
+      "obra_id": 2,
+      "material_id": 3,
+      "fecha_id": 20260911,
+      "cantidad": 95.0,
+      "tipo_movimiento": "SALIDA",
+      "costo_unitario": 18500.0,
+      "costo_total": 1757500.0,
+      "observaciones": "Aplicacion en torres 1 y 2",
+      "lote": "LOTE-010",
+      "fecha_registro": "2026-09-15T13:45:44.173000"
+    }
+  ]
+}
