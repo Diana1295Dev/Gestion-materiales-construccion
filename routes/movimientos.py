@@ -5,6 +5,7 @@ from sqlalchemy import case, func
 
 from extensions import db
 from models import Material, Movimiento, Obra, Tiempo
+from routes.materiales import aplicar_stock_calculado
 
 bp = Blueprint("movimientos", __name__, url_prefix="/api/movimientos")
 
@@ -121,6 +122,8 @@ def crear():
             lote=(payload.get("lote") or "").strip(),
         )
         db.session.add(movimiento)
+        if tipo == "SALIDA":
+            aplicar_stock_calculado(material)
         db.session.commit()
         return jsonify(movimiento.to_dict()), 201
     except Exception as exc:

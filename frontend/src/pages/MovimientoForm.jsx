@@ -149,7 +149,7 @@ export default function MovimientoForm() {
             </div>
 
             <div className="field">
-              <label>Costo unitario (USD)</label>
+              <label>Costo unitario (COP)</label>
               <input type="number" step="0.01" min="0" name="costo_unitario" required value={form.costo_unitario} onChange={onChange} />
             </div>
 

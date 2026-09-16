@@ -1,4 +1,4 @@
-const defaultFormat = (n) => Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+const defaultFormat = (n) => Number(n).toLocaleString("es-CO", { maximumFractionDigits: 2 });
 
 /**
  * Barra de progreso reutilizable.

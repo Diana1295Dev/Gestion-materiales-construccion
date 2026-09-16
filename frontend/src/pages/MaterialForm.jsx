@@ -13,12 +13,12 @@ const empty = {
   categoria: CATEGORIAS[0],
   unidad: UNIDADES[0],
   costo_unitario: "",
-  stock_minimo: 0,
-  stock_maximo: 1000,
   tiempo_reposicion_dias: 15,
   lote_compra: 100,
   descripcion: "",
 };
+
+const today = new Date().toISOString().slice(0, 10);
 
 export default function MaterialForm() {
   const { materialId } = useParams();
@@ -27,6 +27,9 @@ export default function MaterialForm() {
   const [form, setForm] = useState(empty);
   const [message, setMessage] = useState(null);
   const [sugerencia, setSugerencia] = useState(null);
+  const [obras, setObras] = useState([]);
+  const [tieneStock, setTieneStock] = useState(false);
+  const [stockInicial, setStockInicial] = useState({ tipo: "ENTRADA", obra_id: "", cantidad: "" });
 
   useEffect(() => {
     if (editing) {
@@ -38,28 +41,44 @@ export default function MaterialForm() {
         })
       );
       api.get(`/materiales/${materialId}/sugerencia-stock`).then(setSugerencia).catch(() => {});
+    } else {
+      api.get("/obras?estado=activa").then(setObras).catch(() => {});
     }
   }, [materialId]);
 
-  const usarSugerencia = () => {
-    if (!sugerencia?.stock_minimo_sugerido) return;
-    setForm({
-      ...form,
-      stock_minimo: sugerencia.stock_minimo_sugerido,
-      stock_maximo: sugerencia.stock_maximo_sugerido,
-    });
-  };
-
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChangeStock = (e) => setStockInicial({ ...stockInicial, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
+      let material;
       if (editing) {
-        await api.put(`/materiales/${materialId}`, form);
+        material = await api.put(`/materiales/${materialId}`, form);
       } else {
-        await api.post("/materiales", form);
+        material = await api.post("/materiales", form);
       }
+
+      if (!editing && tieneStock && stockInicial.cantidad && stockInicial.obra_id) {
+        try {
+          await api.post("/movimientos", {
+            tipo_movimiento: stockInicial.tipo,
+            obra_id: stockInicial.obra_id,
+            material_id: material.material_id,
+            cantidad: stockInicial.cantidad,
+            costo_unitario: form.costo_unitario,
+            fecha: today,
+            observaciones: "Inventario inicial",
+          });
+        } catch (err) {
+          setMessage({
+            type: "error",
+            text: `El material se creó, pero no se pudo registrar el stock inicial: ${err.message}`,
+          });
+          return;
+        }
+      }
+
       navigate("/materiales");
     } catch (err) {
       setMessage({ type: "error", text: `No se pudo guardar el material: ${err.message}` });
@@ -92,16 +111,8 @@ export default function MaterialForm() {
               </select>
             </div>
             <div className="field">
-              <label>Costo unitario (USD)</label>
+              <label>Costo unitario (COP)</label>
               <input type="number" step="0.01" min="0" name="costo_unitario" required value={form.costo_unitario} onChange={onChange} />
-            </div>
-            <div className="field">
-              <label>Stock mínimo</label>
-              <input type="number" step="0.01" min="0" name="stock_minimo" value={form.stock_minimo} onChange={onChange} />
-            </div>
-            <div className="field">
-              <label>Stock máximo</label>
-              <input type="number" step="0.01" min="0" name="stock_maximo" value={form.stock_maximo} onChange={onChange} />
             </div>
             <div className="field">
               <label>Tiempo de reposición (días) <span className="hint">(lo que tarda en llegar un pedido)</span></label>
@@ -114,45 +125,95 @@ export default function MaterialForm() {
 
             {editing && sugerencia && (
               <div className="field full">
-                {sugerencia.suficiente || sugerencia.meses_con_datos > 0 ? (
-                  <div className="suggestion-box">
-                    <div className="suggestion-box-header">
-                      <strong>📊 Sugerencia con base en el historial de salidas</strong>
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={usarSugerencia}>
-                        Usar sugerido
-                      </button>
-                    </div>
-                    <p>
-                      Con {sugerencia.meses_con_datos} {sugerencia.meses_con_datos === 1 ? "mes" : "meses"} de
-                      historial, la demanda diaria promedio es <strong>{sugerencia.demanda_diaria_promedio}</strong>{" "}
-                      {form.unidad}/día. Con un tiempo de reposición de {sugerencia.tiempo_reposicion_dias} días y un
-                      stock de seguridad de {sugerencia.stock_seguridad} {form.unidad}:
-                    </p>
-                    <p style={{ marginTop: 4 }}>
-                      Mínimo sugerido = (demanda diaria × tiempo de reposición) + stock de seguridad ={" "}
-                      <strong>{sugerencia.stock_minimo_sugerido}</strong> {form.unidad}
-                      <br />
-                      Máximo sugerido = mínimo + lote de compra ({sugerencia.lote_compra}) ={" "}
-                      <strong>{sugerencia.stock_maximo_sugerido}</strong> {form.unidad}
-                    </p>
-                    {!sugerencia.suficiente && (
-                      <p className="hint">
-                        Con solo 1 mes de historial la sugerencia es preliminar — se afina a medida que registres
-                        más movimientos.
+                <div className="suggestion-box">
+                  <div className="suggestion-box-header">
+                    <strong>📊 Stock mínimo y máximo (calculado automáticamente)</strong>
+                  </div>
+                  {sugerencia.meses_con_datos > 0 ? (
+                    <>
+                      <p>
+                        Con {sugerencia.meses_con_datos} {sugerencia.meses_con_datos === 1 ? "mes" : "meses"} de
+                        historial, la demanda diaria promedio es <strong>{sugerencia.demanda_diaria_promedio}</strong>{" "}
+                        {form.unidad}/día. Con un tiempo de reposición de {sugerencia.tiempo_reposicion_dias} días y un
+                        stock de seguridad de {sugerencia.stock_seguridad} {form.unidad}:
                       </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="suggestion-box">
+                      <p style={{ marginTop: 4 }}>
+                        Mínimo = (demanda diaria × tiempo de reposición) + stock de seguridad ={" "}
+                        <strong>{sugerencia.stock_minimo_sugerido}</strong> {form.unidad}
+                        <br />
+                        Máximo = mínimo + lote de compra ({sugerencia.lote_compra}) ={" "}
+                        <strong>{sugerencia.stock_maximo_sugerido}</strong> {form.unidad}
+                      </p>
+                      {!sugerencia.suficiente && (
+                        <p className="hint">
+                          Con solo 1 mes de historial el cálculo es preliminar — se afina a medida que registres más
+                          movimientos.
+                        </p>
+                      )}
+                    </>
+                  ) : (
                     <p>{sugerencia.mensaje}</p>
-                  </div>
-                )}
+                  )}
+                  <p className="hint" style={{ marginTop: 6 }}>
+                    Estos valores se recalculan solos cada vez que guardas el material o registras una salida — no se
+                    editan a mano.
+                  </p>
+                </div>
               </div>
             )}
+
             <div className="field full">
               <label>Descripción <span className="hint">(opcional)</span></label>
               <textarea name="descripcion" maxLength={200} value={form.descripcion} onChange={onChange}></textarea>
             </div>
+
+            {!editing && (
+              <div className="field full">
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={tieneStock} onChange={(e) => setTieneStock(e.target.checked)} />
+                  Ya tengo stock de este material
+                </label>
+              </div>
+            )}
+
+            {!editing && tieneStock && (
+              <>
+                <div className="field full">
+                  <label>Tipo de movimiento</label>
+                  <div className="toggle-tipo">
+                    <input
+                      type="radio"
+                      id="stock-entrada"
+                      name="tipo"
+                      checked={stockInicial.tipo === "ENTRADA"}
+                      onChange={() => setStockInicial({ ...stockInicial, tipo: "ENTRADA" })}
+                    />
+                    <label htmlFor="stock-entrada" className="entrada">⬇ Entrada</label>
+                    <input
+                      type="radio"
+                      id="stock-salida"
+                      name="tipo"
+                      checked={stockInicial.tipo === "SALIDA"}
+                      onChange={() => setStockInicial({ ...stockInicial, tipo: "SALIDA" })}
+                    />
+                    <label htmlFor="stock-salida" className="salida">⬆ Salida</label>
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Obra</label>
+                  <select name="obra_id" required value={stockInicial.obra_id} onChange={onChangeStock}>
+                    <option value="" disabled>Selecciona una obra</option>
+                    {obras.map((o) => (
+                      <option key={o.obra_id} value={o.obra_id}>{o.nombre_obra}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Cantidad <span className="hint">({form.unidad})</span></label>
+                  <input type="number" step="0.01" min="0.01" name="cantidad" required value={stockInicial.cantidad} onChange={onChangeStock} />
+                </div>
+              </>
+            )}
           </div>
           <div className="form-actions">
             <Link to="/materiales" className="btn btn-ghost">Cancelar</Link>

@@ -16,9 +16,7 @@ import {
 import Layout from "../components/Layout";
 import AnimatedNumber from "../components/AnimatedNumber";
 import { api } from "../api/client";
-
-const money = (n) =>
-  "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+import { money } from "../utils/format";
 
 const moneyShort = (n) => {
   const abs = Math.abs(n);

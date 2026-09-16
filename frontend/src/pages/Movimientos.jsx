@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import MotionRow from "../components/MotionRow";
 import { api } from "../api/client";
-
-const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+import { money } from "../utils/format";
 
 const emptyFiltros = { obra_id: "", material_id: "", tipo: "", desde: "", hasta: "" };
 

@@ -6,8 +6,7 @@ import Flash from "../components/Flash";
 import MotionRow from "../components/MotionRow";
 import ProgressStock from "../components/ProgressStock";
 import { api } from "../api/client";
-
-const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+import { money } from "../utils/format";
 
 export default function Materiales() {
   const [materiales, setMateriales] = useState([]);

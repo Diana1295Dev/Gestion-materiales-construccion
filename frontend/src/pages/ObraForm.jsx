@@ -71,11 +71,11 @@ export default function ObraForm() {
               <input name="ciudad" required maxLength={50} value={form.ciudad} onChange={onChange} />
             </div>
             <div className="field">
-              <label>Presupuesto total (USD)</label>
+              <label>Presupuesto total (COP)</label>
               <input type="number" step="0.01" min="0" name="presupuesto_total" required value={form.presupuesto_total} onChange={onChange} />
             </div>
             <div className="field">
-              <label>Responsable</label>
+              <label>Responsable de la obra</label>
               <input name="responsable" maxLength={100} value={form.responsable} onChange={onChange} />
             </div>
             <div className="field">

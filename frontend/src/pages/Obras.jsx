@@ -6,10 +6,7 @@ import Flash from "../components/Flash";
 import MotionRow from "../components/MotionRow";
 import ProgressStock from "../components/ProgressStock";
 import { api } from "../api/client";
-
-const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const moneyCompact = (n) =>
-  "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+import { money } from "../utils/format";
 
 export default function Obras() {
   const [obras, setObras] = useState([]);
@@ -62,7 +59,7 @@ export default function Obras() {
                         variant="budget"
                         value={obra.gasto_acumulado ?? 0}
                         max={obra.presupuesto_total}
-                        format={moneyCompact}
+                        format={money}
                       />
                     </td>
                     <td><span className={`badge badge-${obra.estado}`}>{obra.estado[0].toUpperCase() + obra.estado.slice(1)}</span></td>
