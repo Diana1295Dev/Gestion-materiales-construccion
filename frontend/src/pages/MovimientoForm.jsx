@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import Flash from "../components/Flash";
 import { api } from "../api/client";
@@ -46,8 +46,6 @@ export default function MovimientoForm() {
       return next;
     });
   };
-
-  const costoTotal = (parseFloat(form.cantidad) || 0) * (parseFloat(form.costo_unitario) || 0);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -149,18 +147,8 @@ export default function MovimientoForm() {
             </div>
 
             <div className="field">
-              <label>Costo unitario (COP)</label>
-              <input type="number" step="0.01" min="0" name="costo_unitario" required value={form.costo_unitario} onChange={onChange} />
-            </div>
-
-            <div className="field">
               <label>Fecha</label>
               <input type="date" name="fecha" required value={form.fecha} onChange={onChange} />
-            </div>
-
-            <div className="field">
-              <label>Lote <span className="hint">(opcional)</span></label>
-              <input name="lote" maxLength={50} value={form.lote} onChange={onChange} placeholder="Ej. LOTE-2026-014" />
             </div>
 
             <div className="field full">
@@ -168,20 +156,6 @@ export default function MovimientoForm() {
               <textarea name="observaciones" maxLength={255} value={form.observaciones} onChange={onChange} placeholder="Detalles adicionales del movimiento"></textarea>
             </div>
 
-            <div className="field full">
-              <label>Costo total estimado</label>
-              <AnimatePresence mode="popLayout">
-                <motion.div
-                  key={costoTotal.toFixed(2)}
-                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ fontFamily: "var(--font-sans)", fontSize: 26, fontWeight: 700, color: "var(--color-primary)" }}
-                >
-                  ${costoTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </motion.div>
-              </AnimatePresence>
-            </div>
           </div>
 
           <div className="form-actions">
