@@ -291,7 +291,7 @@ export default function Dashboard() {
                     <tr><th>Fecha</th><th>Tipo</th><th>Material</th><th>Obra</th><th>Cantidad</th><th>Costo total</th></tr>
                   </thead>
                   <tbody>
-                    {data.recientes.map((m) => (
+                    {[...data.recientes].sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).map((m) => (
                       <tr key={m.movimiento_id}>
                         <td>{new Date(m.fecha + "T00:00:00").toLocaleDateString("es-CO")}</td>
                         <td>
