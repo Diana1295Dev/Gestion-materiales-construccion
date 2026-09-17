@@ -11,6 +11,24 @@ bp = Blueprint("materiales", __name__, url_prefix="/api/materiales")
 UNIDADES = ["kg", "m3", "m2", "unidad", "bolsa", "litro", "varilla", "rollo"]
 CATEGORIAS = ["Estructural", "Acabados", "Fundacion", "Instalaciones", "Herramientas"]
 
+MATERIALES_INICIALES = [
+    {"nombre": "Cemento gris tipo I", "categoria": "Estructural", "unidad": "kg", "costo_unitario": 450},
+    {"nombre": "Acero de refuerzo", "categoria": "Estructural", "unidad": "kg", "costo_unitario": 3500},
+    {"nombre": "Ladrillo estructural", "categoria": "Estructural", "unidad": "unidad", "costo_unitario": 1200},
+    {"nombre": "Arena gruesa", "categoria": "Fundacion", "unidad": "m3", "costo_unitario": 80000},
+    {"nombre": "Grava", "categoria": "Fundacion", "unidad": "m3", "costo_unitario": 120000},
+    {"nombre": "Bloque de concreto", "categoria": "Estructural", "unidad": "unidad", "costo_unitario": 2500},
+    {"nombre": "Varilla de acero", "categoria": "Estructural", "unidad": "varilla", "costo_unitario": 28000},
+    {"nombre": "Tuberías PVC", "categoria": "Instalaciones", "unidad": "unidad", "costo_unitario": 15000},
+    {"nombre": "Pintura latex", "categoria": "Acabados", "unidad": "litro", "costo_unitario": 35000},
+    {"nombre": "Madera aserrada", "categoria": "Acabados", "unidad": "m3", "costo_unitario": 2500000},
+    {"nombre": "Tabique rojo", "categoria": "Estructural", "unidad": "unidad", "costo_unitario": 800},
+    {"nombre": "Yeso", "categoria": "Acabados", "unidad": "bolsa", "costo_unitario": 12000},
+    {"nombre": "Vidrio templado", "categoria": "Acabados", "unidad": "m2", "costo_unitario": 450000},
+    {"nombre": "Cerámicas", "categoria": "Acabados", "unidad": "m2", "costo_unitario": 250000},
+    {"nombre": "Tejas de barro", "categoria": "Acabados", "unidad": "unidad", "costo_unitario": 5000},
+]
+
 # ---------------------------------------------------------------------------
 # Formula de punto de reorden (inventario clasico, no ML):
 #
@@ -187,3 +205,29 @@ def opciones():
 def sugerencia_stock(material_id):
     material = Material.query.get_or_404(material_id)
     return jsonify(_calcular_sugerencia(material))
+
+
+@bp.route("/init/cargar-iniciales", methods=["POST"])
+def cargar_materiales_iniciales():
+    from flask import request
+    if request.args.get("key") != __import__("config").Config.SECRET_KEY:
+        return jsonify({"error": "No autorizado"}), 403
+
+    creados = 0
+    for mat_data in MATERIALES_INICIALES:
+        existe = Material.query.filter_by(nombre=mat_data["nombre"]).first()
+        if not existe:
+            material = Material(
+                nombre=mat_data["nombre"],
+                categoria=mat_data["categoria"],
+                unidad=mat_data["unidad"],
+                costo_unitario=mat_data["costo_unitario"],
+                stock_minimo=0,
+                stock_maximo=1000,
+                descripcion=""
+            )
+            db.session.add(material)
+            creados += 1
+
+    db.session.commit()
+    return jsonify({"status": "ok", "creados": creados, "total": len(MATERIALES_INICIALES)})
