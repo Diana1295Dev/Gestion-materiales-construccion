@@ -209,10 +209,6 @@ def sugerencia_stock(material_id):
 
 @bp.route("/init/cargar-iniciales", methods=["GET", "POST"])
 def cargar_materiales_iniciales():
-    from flask import request
-    if request.args.get("key") != __import__("config").Config.SECRET_KEY:
-        return jsonify({"error": "No autorizado"}), 403
-
     creados = 0
     for mat_data in MATERIALES_INICIALES:
         existe = Material.query.filter_by(nombre=mat_data["nombre"]).first()
