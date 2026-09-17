@@ -7,6 +7,23 @@ import { api } from "../api/client";
 
 const UNIDADES = ["kg", "m3", "m2", "unidad", "bolsa", "litro", "varilla", "rollo"];
 const CATEGORIAS = ["Estructural", "Acabados", "Fundacion", "Instalaciones", "Herramientas"];
+const MATERIALES_COMUNES = [
+  "Cemento gris tipo I",
+  "Acero de refuerzo",
+  "Ladrillo estructural",
+  "Arena gruesa",
+  "Grava",
+  "Bloque de concreto",
+  "Varilla de acero",
+  "Tuberías PVC",
+  "Pintura latex",
+  "Madera aserrada",
+  "Tabique rojo",
+  "Yeso",
+  "Vidrio templado",
+  "Cerámicas",
+  "Tejas de barro",
+];
 
 const empty = {
   nombre: "",
@@ -97,7 +114,10 @@ export default function MaterialForm() {
           <div className="form-grid">
             <div className="field full">
               <label>Nombre del material</label>
-              <input name="nombre" required maxLength={120} value={form.nombre} onChange={onChange} placeholder="Ej. Cemento gris tipo I" />
+              <input name="nombre" required maxLength={120} value={form.nombre} onChange={onChange} placeholder="Ej. Cemento gris tipo I" list="materiales-comunes" />
+              <datalist id="materiales-comunes">
+                {MATERIALES_COMUNES.map((m) => <option key={m} value={m} />)}
+              </datalist>
             </div>
             <div className="field">
               <label>Categoría</label>
