@@ -207,7 +207,7 @@ def sugerencia_stock(material_id):
     return jsonify(_calcular_sugerencia(material))
 
 
-@bp.route("/init/cargar-iniciales", methods=["POST"])
+@bp.route("/init/cargar-iniciales", methods=["GET", "POST"])
 def cargar_materiales_iniciales():
     from flask import request
     if request.args.get("key") != __import__("config").Config.SECRET_KEY:
