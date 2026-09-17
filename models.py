@@ -76,9 +76,17 @@ class Material(db.Model):
     def tiempo_reposicion_dias(self):
         return 15
 
+    @tiempo_reposicion_dias.setter
+    def tiempo_reposicion_dias(self, value):
+        pass
+
     @property
     def lote_compra(self):
         return 100
+
+    @lote_compra.setter
+    def lote_compra(self, value):
+        pass
 
     def to_dict(self, stock_actual=None):
         data = {
