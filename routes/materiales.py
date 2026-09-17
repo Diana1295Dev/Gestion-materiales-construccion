@@ -9,14 +9,14 @@ from models import Material, Movimiento, Tiempo, stock_por_material_subquery
 bp = Blueprint("materiales", __name__, url_prefix="/api/materiales")
 
 UNIDADES = ["kg", "m3", "m2", "unidad", "bolsa", "litro", "varilla", "rollo"]
-CATEGORIAS = ["Estructural", "Acabados", "Fundacion", "Instalaciones", "Herramientas"]
+CATEGORIAS = ["Estructural", "Acabados", "Fundición", "Instalaciones", "Herramientas"]
 
 MATERIALES_INICIALES = [
     {"nombre": "Cemento gris tipo I", "categoria": "Estructural", "unidad": "kg", "costo_unitario": 450},
     {"nombre": "Acero de refuerzo", "categoria": "Estructural", "unidad": "kg", "costo_unitario": 3500},
     {"nombre": "Ladrillo estructural", "categoria": "Estructural", "unidad": "unidad", "costo_unitario": 1200},
-    {"nombre": "Arena gruesa", "categoria": "Fundacion", "unidad": "m3", "costo_unitario": 80000},
-    {"nombre": "Grava", "categoria": "Fundacion", "unidad": "m3", "costo_unitario": 120000},
+    {"nombre": "Arena gruesa", "categoria": "Fundición", "unidad": "m3", "costo_unitario": 80000},
+    {"nombre": "Grava", "categoria": "Fundición", "unidad": "m3", "costo_unitario": 120000},
     {"nombre": "Bloque de concreto", "categoria": "Estructural", "unidad": "unidad", "costo_unitario": 2500},
     {"nombre": "Varilla de acero", "categoria": "Estructural", "unidad": "varilla", "costo_unitario": 28000},
     {"nombre": "Tuberías PVC", "categoria": "Instalaciones", "unidad": "unidad", "costo_unitario": 15000},

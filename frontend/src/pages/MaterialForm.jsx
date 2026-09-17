@@ -6,7 +6,7 @@ import Flash from "../components/Flash";
 import { api } from "../api/client";
 
 const UNIDADES = ["kg", "m3", "m2", "unidad", "bolsa", "litro", "varilla", "rollo"];
-const CATEGORIAS = ["Estructural", "Acabados", "Fundacion", "Instalaciones", "Herramientas"];
+const CATEGORIAS = ["Estructural", "Acabados", "Fundición", "Instalaciones", "Herramientas"];
 const MATERIALES_COMUNES = [
   "Cemento gris tipo I",
   "Acero de refuerzo",
